@@ -1,0 +1,18 @@
+.DS_Store
+.vscode/
+.idea/
+*.log
+node_modules/
+dist/
+build/
+bin/
+obj/
+*.suo
+*.user  
+.vs/
+.agent/
+
+# Appsettings secrets
+appsettings.Development.json
+appsettings.Local.json
+
