@@ -16,5 +16,5 @@ public class NewsList
     public int MenuId { get; set; }
 
     // Navigation Property
-    public Menu Menu { get; set; } = new();
+    public Menu? Menu { get; set; }
 }

@@ -17,6 +17,8 @@ public static class DependencyInjection
 
         services.AddScoped<IDbConnection>(sp => new SqlConnection(configuration.GetConnectionString("DefaultConnection")));
         services.AddScoped<IMenuRepository, MenuRepository>();
+        services.AddScoped<INewsRepository, NewsRepository>();
+
         return services;
     }
 }
