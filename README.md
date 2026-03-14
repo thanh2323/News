@@ -65,10 +65,28 @@ graph TD
 
 ### CQRS & Hybrid Persistence
 
-Tôi tách biệt hoàn toàn luồng xử lý dữ liệu:
+Tôi tách biệt hoàn toàn luồng xử lý dữ liệu để tối ưu hóa hiệu năng và khả năng bảo trì:
 
-- **Commands (Write)**: Sử dụng **EF Core** để quản lý trạng thái, đảm bảo tính nhất quán (Consistency) và các ràng buộc dữ liệu phức tạp.
-- **Queries (Read)**: Sử dụng **Dapper** để thực thi SQL thuần, mang lại hiệu năng tối đa và sự linh hoạt trong việc lấy dữ liệu (Projections).
+- **Commands (Write)**: Sử dụng **Repository Pattern** kết hợp với **EF Core**.
+  - Logic: Handler → Repository Interface → EF Core Implementation.
+  - Mục tiêu: Đảm bảo tính nhất quán dữ liệu (Data Integrity), quản lý Transaction và các ràng buộc phức tạp thông qua Unit of Work.
+- **Queries (Read)**: Sử dụng **Dapper** trực tiếp trong **Query Handlers**.
+  - Logic: Handler → `IDbConnection` → Raw SQL (Dapper).
+  - Mục tiêu: Đạt hiệu năng tối đa (Maximum Performance), giảm thiểu overhead của ORM và linh hoạt tối đa trong việc tạo các Projections/DTOs phức tạp mà không bị gò bó bởi các Interface Repository truyền thống.
+
+## ⚖️ Trade-offs: Direct Dapper in Handlers vs. Repository Pattern
+
+Dự án này lựa chọn cách tiếp cận "Hybrid" (Hỗn hợp). Dưới đây là bảng so sánh các đánh đổi (trade-offs) giữa việc dùng Dapper trực tiếp trong Handler so với việc bọc qua Repository:
+
+| Tiêu chí           | Dapper trực tiếp trong Query Handler (Lựa chọn của dự án)                                                          | Dapper bọc qua Repository (Truyền thống)                                                                      |
+| :----------------- | :----------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------ |
+| **Hiệu năng**      | **Tối ưu nhất**: Truy vấn trực tiếp từ Handler, không tốn thêm lớp trừu tượng trung gian.                          | **Tốt**: Có thêm overhead tối thiểu khi gọi qua các lớp Repository.                                           |
+| **Tính linh hoạt** | **Cực cao**: Mỗi Query có thể viết SQL riêng biệt cho các DTO/View cụ thể mà không làm phình Interface Repository. | **Trung bình**: Mọi thay đổi về Query (Read) đều đòi hỏi cập nhật Interface và Implementation của Repository. |
+| **Tính đóng gói**  | Thấp hơn: Logic truy cập dữ liệu (SQL) nằm ngay tại Application Layer.                                             | Cao hơn: Logic truy cập dữ liệu được đóng gói hoàn toàn trong Infrastructure Layer.                           |
+| **Khả năng Test**  | Phù hợp với Integration Test hoặc Mocking `IDbConnection`.                                                         | Dễ dàng Unit Test Handler bằng cách Mocking Repository Interface.                                             |
+| **Độ phức tạp**    | **Giảm bớt**: Loại bỏ sự cần thiết của các Interface/Implementation rườm rà cho luồng Read.                        | **Tăng thêm**: Boilerplate code nhiều hơn (Interface + Class + DI Registration).                              |
+
+**Lý do chọn tiếp cận này**: Việc sử dụng Dapper trực tiếp trong Query Handlers giúp tôi tuân thủ triệt để nguyên tắc **CQRS**, nơi mà luồng Read không nhất thiết phải tuân theo các cấu trúc gò bó của luồng Write, từ đó mang lại tốc độ phát triển và hiệu năng tốt nhất cho ứng dụng tin tức.
 
 ### MediatR
 
@@ -155,6 +173,7 @@ Hệ thống sử dụng Middleware xử lý lỗi tập trung:
 - `DELETE /api/news/{id}`: Xóa bài viết.
 
 ## 📁 Cấu trúc thư mục (Project Structure)
+
 ```text
 / (Root)
 ├── News.sln                     # Giải pháp tổng thể (Solution)
