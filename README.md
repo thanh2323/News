@@ -154,17 +154,44 @@ Hệ thống sử dụng Middleware xử lý lỗi tập trung:
 - `PUT /api/news/{id}`: Chỉnh sửa bài viết.
 - `DELETE /api/news/{id}`: Xóa bài viết.
 
-## 📁 Cấu trúc thư mục
-
+## 📁 Cấu trúc thư mục (Project Structure)
 ```text
-src/
-├── News.API/              # Controllers, Middlewares, Program.cs
-├── News.Application/      # CQRS Features, Handlers, DTOs, Interfaces
-├── News.Domain/           # Entities (Menu, NewsList), Interfaces
-└── News.Infrastructure/   # AppDbContext, Repositories, Migrations
-
-tests/
-└── News.UnitTests/        # Unit Tests cho Controllers & Business Logic
+/ (Root)
+├── News.sln                     # Giải pháp tổng thể (Solution)
+├── API_DOCUMENT.md              # Tài liệu chi tiết các API endpoints
+├── GEMINI.md                    # Hướng dẫn và quy chuẩn phát triển
+├── src/
+│   ├── News.API/                # Tầng trình diễn (Presentation Layer)
+│   │   ├── Controller/          # API Controllers (Menu, News)
+│   │   ├── Middleware/          # Xử lý lỗi toàn cục, Logging
+│   │   ├── Properties/          # Cấu hình môi trường (launchSettings.json)
+│   │   ├── Program.cs           # Cấu hình Services & Pipeline
+│   │   └── appsettings.json     # Chuỗi kết nối, cấu hình ứng dụng
+│   │
+│   ├── News.Application/        # Tầng ứng dụng (Application Layer - CQRS)
+│   │   ├── DTOs/                # Data Transfer Objects cho Menu & News
+│   │   ├── Exceptions/          # Các ngoại lệ tùy chỉnh (NotFoundException)
+│   │   ├── Feature/             # Logic nghiệp vụ tách theo tính năng
+│   │   │   ├── Menu/            # Commands & Queries cho Menu
+│   │   │   └── News/            # Commands & Queries cho News
+│   │   ├── Interfaces/          # Định nghĩa Repositories & Services
+│   │   └── News.Application.csproj
+│   │
+│   ├── News.Domain/             # Tầng nghiệp vụ lõi (Domain Layer)
+│   │   ├── Entities/            # Thực thể chính (Menu, NewsList)
+│   │   └── News.Domain.csproj
+│   │
+│   └── News.Infrastructure/     # Tầng hạ tầng (Infrastructure Layer)
+│       ├── Data/                # EF Core DbContext
+│       ├── Extensions/          # Đăng ký Dependency Injection
+│       ├── Migrations/          # Lịch sử thay đổi Database
+│       ├── Repositories/        # Triển khai thực tế các Repositories
+│       └── News.Infrastructure.csproj
+│
+└── tests/
+    └── News.UnitTests/          # Tầng kiểm thử (Testing Layer)
+        ├── Controllers/         # Unit tests cho các Controllers
+        └── News.UnitTests.csproj
 ```
 
 ## 📄 Giấy phép (License)
